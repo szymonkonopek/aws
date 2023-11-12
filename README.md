@@ -86,38 +86,4 @@
 5. Potem teoretycznie powinno zadziałać ``<twoje publiczne ip>:<port>`` czyli np: ``https://3.71.53.56:8000`` ale mi to np nie działa
 6. Port mozna zobaczyć w ``src/main/resources/application.yaml``
 
-## Automatyzacja 🎰
-1. Tworzymy skrypt cs2/example.sh
-
-### Przykład skryptu ec2/example_remotely.sh
-```
-#!/bin/bash
-
-#ssh ec2-user@3.71.202.94 -i id_student 'sudo bash -s' < ~/ec2/example_remotely.sh
-
-MY_NAME=${MY_NAME:-"Szymon"}
-PACKAGES_TO_BE_INSTALLED='cowsay mc tree'
-
-echo "hello $MY_NAME"
-dnf install -y -q ${PACKAGES_TO_BE_INSTALLED} #y zgadza się na wszystko
-
-#Install java
-dnf -y -q install java-17-amazon-corretto
-
-#dir structure
-mkdir -p /opt/ecommerce
-
-##Going to download app jar
-# https://github.com/influxdata/influxdb
-
-cowsay 'it works 🐄'
-```
-
-* Github actions: ``https://docs.github.com/en/actions/quickstart``
-* Java with Maven:  ``https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven``
-* Kanclerz acitons:  ``https://github.com/jkanclerz/computer-programming-4/tree/master/.github/workflows``
-
-2. Tworzymy akcje takie jak zrobił Mr. Kanclerz 🎬
-3. W między czasie mozna zobaczyć zakładke release dodać tak i coś tam zrobić?
-4. Dodajmy taga ``git tag -a 'v1.11' -m 'my 1.11'``
-# Praca domowa: Zainstalować wordpress
+## Here we go again 🤷🏾‍♂️
