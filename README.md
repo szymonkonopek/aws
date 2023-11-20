@@ -87,3 +87,20 @@
 6. Port mozna zobaczyć w ``src/main/resources/application.yaml``
 
 ## Here we go again 🤷🏾‍♂️
+
+
+### Systemd shit
+```
+cd /
+cd etc/systemd/system
+sudo nano ecom.service
+```
+
+```
+sudo systemctl daemon-reload
+sudo systemctl start ecom
+sudo systemctl status ecom
+```
+Mozemy zobaczyc sobie logi `journalctl -u ecom`
+Follow `journalctl -u ecom -f`
+

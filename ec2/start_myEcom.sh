@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #How to start:
-#ssh ec2-user@18.196.80.165 -i id_student 'sudo bash -s' < ~/aws/ec2/start_myEcom.sh
+#ssh ec2-user@52.59.196.176 -i id_student 'sudo bash -s' < ~/aws/ec2/start_myEcom.sh
 
 MY_NAME=${MY_NAME:-"Szymon"}
 PACKAGES_TO_BE_INSTALLED='cowsay mc tree'
@@ -19,7 +19,28 @@ mkdir -p /opt/ecommerce
 
 ##Going to download app jar
 wget -O /opt/ecommerce/app.jar ${MY_APP_URL} #pobiera to 2 raz jezeli juz jest
-java -Dserver.port=80 -jar /opt/ecommerce/app.jar
+
+systemdTemplate ="
+[Unit]
+Description=Ecom service
+After=network-online.target
+
+[Service]
+Type=simple
+User=ec2-user
+ExecStart=java -jar /opt/ecommerce/app.jar
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+"
+
+echo -e "$systemdTemplate" > /etc/systemd/ecom.service
+systemctl daemon-reload
+systemctl enable ecom
+systemctl start ecom
+
+#java -Dserver.port=80 -jar /opt/ecommerce/app.jar
 
 cowsay 'it works 🐄'
 
