@@ -104,3 +104,56 @@ sudo systemctl status ecom
 Mozemy zobaczyc sobie logi `journalctl -u ecom`
 Follow `journalctl -u ecom -f`
 
+# Ansible
+```
+eval `ssh-agent`
+```
+2. add ssh ➕ `ssh_add id_student`
+3. ping pong 🏓 `ansible -m ping -i hosts.ini app_nodes` 
+4. run script 🏃 `ansible-playbook -i hosts.ini install_java_app.yaml`
+
+```
+- name: "Install eceommerce app"
+  hosts: app_nodes
+  become: yes
+  vars:
+    app_url: https://github.com/szymonkonopek/myEcom/releases/download/v1.31/my-ecommerce-0.1.jar
+    app_dir: /opt/ecommerce
+    app_name: ecommerce
+    my_favourite_software:
+      - cowsay
+      - mc
+      - tree
+    my_must_have_software:
+      - java-17-amazon-corretto
+  tasks:
+    - name: "My first command via ansible"
+      shell: "echo 'hello world :)' > hello_world.txt"
+    - name: "install my favourite software: eg cowsay"
+      dnf:
+        name: "{{ my_favourite_software }}"
+        state: latest
+    - name: "install my must have  software"
+      dnf:
+        name: "{{ my_must_have_software }}"
+        state: latest
+    - name: "create app dir"
+      file:
+        path: "{{app_dir}}"
+        state: directory
+    - name: "Download my app"
+      get_url:
+        url: "{{ app_url }}"
+        dest: "{{app_dir}}/{{app_name}}.jar"
+    - name: "create systemd config"
+      template:
+        src: templates/app.service.j2
+        dest: "/etc/systemd/system/{{ app_name }}.service"
+    - name: "restart my service & add to autostart"
+      systemd_service:
+        name: "{{app_name}}"
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+```
+

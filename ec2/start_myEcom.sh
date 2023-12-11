@@ -42,7 +42,11 @@ systemctl start ecom
 
 #java -Dserver.port=80 -jar /opt/ecommerce/app.jar
 
+
 cowsay 'it works 🐄'
+
+# CentOS Stream MariaDB
+
 
 #get mysql mariadb, install server
 # sudo dnf install mariadb105-server -y -q
@@ -53,3 +57,10 @@ cowsay 'it works 🐄'
 
 # create database my_db;
 # use my_db;
+
+
+
+# 4 grudnia
+# eval `ssh-agent`
+# ssh-add id_student
+
