@@ -4,7 +4,7 @@
 1. ssh s221598@csa.edu.jkan.pl (swój nr albumu)
 
 2. ``curl http://adsk.dydaktyka.jkan.pl/_static/id_student -o id_student`` (pobieramy plik id_student)
-3. ``ssh ec2-user@18.184.43.215 -i id_student`` (łaczymy się do ec2-user)
+3. ``ssh ec2-user@3.68.185.254 -i id_student`` (łaczymy się do ec2-user)
 * numerki to adres ip z aws
 3.71.202.94
 4. mam repo ``git@github.com:szymonkonopek/aws.git`` lub ``https://github.com/szymonkonopek/myEcom``
@@ -108,7 +108,7 @@ Follow `journalctl -u ecom -f`
 ```
 eval `ssh-agent`
 ```
-2. add ssh ➕ `ssh_add id_student`
+2. add ssh ➕ `ssh-add id_student`
 3. ping pong 🏓 `ansible -m ping -i hosts.ini app_nodes` 
 4. run script 🏃 `ansible-playbook -i hosts.ini install_java_app.yaml`
 
@@ -157,3 +157,103 @@ eval `ssh-agent`
         daemon_reload: yes
 ```
 
+# Load balancer
+1. trzeba zrobić 2 maszyny (1 zwykła i load balancer)
+2. logujemy do load balancera
+3. `sudo dnf install nginx`
+4. `sudo systemctl restart nginx`
+5. plik `install.yaml` do automatyzacji
+```
+host: lb_nodes
+tasks:
+  - name: "install nginx"
+    dnf:
+      name: nginx
+      state: latest
+  - name: "restart nginx"
+    systemd_service:
+      name: nginx
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+```
+
+6. `cd /etc/nginx`
+7. robimy plik config `conf.d/web.conf`
+```
+server {
+        listen 80;
+        root /var/www;
+
+        location / {
+                proxy_pass http://172.31.20.113:80;
+                proxy_set_header Host $host;
+        }
+}
+```
+
+8. potem na pierwszą maszyne
+9. 
+```
+eval `ssh-agent` 
+```
+10. `ssh-add ~/id_student`
+
+
+# Docker 🐳
+1. `sudo dnf install docker -y`
+2. `docker --version`
+3. `sudo systemctl start docker`
+4. `sudo systemctl status docker`
+
+### Dockerhub
+`https://hub.docker.com/_/alpine` minimalny start
+
+5. `sudo docker run alpine sh -c "echo 'Hello'"` - wypisywanie 'echo' w spoób izolowany na alpine.
+6. Wyświell liste procesów które działają `sudo docker ps`
+7. Wyświell liste procesów które działają plus te poprzednie? `sudo docker ps -a`
+
+### Apache HTTP 🪶
+* `https://hub.docker.com/_/httpd`
+8. `sudo docker run -p 8080:80 httpd:2.4.12`
+9. Idziemy na nasze ip i port 8080
+10. `sudo docker run -d -p 5000:80 httpd:2.4.12` d- background, p - port\ (5000 nie działa na uek)
+###
+11. Nginx -  `sudo docker run -d -p  80:80 nginx:latest` 🦫
+
+### Usuwanie procesów
+1. `sudo docker ps` - sprawdzamy co jakie procesy działają
+2. `sudo docker rm -f <POCZATEK_ID>` - np. a8 przy a808e43...
+
+### Wchodzimy w alpine
+1. `sudo docker run -it alpine sh` (uproszczony bash)
+
+### Próbujemy zainstalować naszą aplikacje
+* apk - project manager w apline
+1. `apk add openjdk17`
+2. `wget https://github.com/szymonkonopek/myEcom/releases/download/v1.31/my-ecommerce-0.1.jar -O app.jar`
+3. `java -Dserver.port=8080 -jar app.jar`
+* działa
+
+## Dockerfile 🐳📁
+1. nano `Dockerfile`
+```
+FROM alpine:latest
+
+RUN mkdir -p /opt/ecommerce
+
+RUN apk add openjdk17
+RUN wget https://github.com/szymonkonopek/myEcom/releases/download/v1.31/my-ecommerce-0.1.jar -O /opt/ecommerce/app.jar
+
+RUN adduser ecommerce --disabled-password
+
+USER ecommerce
+
+EXPOSE 8080
+CMD ["/usr/bin/java/", "-Dserver.port=8080", "-jar", "/opt/ecommerce/app.jar"]
+```
+
+2. budowa obrazu 🧱 `sudo docker build -t my_ecommerce ./` - jak uruchomimy jeszcze raz to cache działą
+3. `sudo docker images` -> my_ecommerce
+
+### Zadanie domowe:
