@@ -256,4 +256,61 @@ CMD ["/usr/bin/java/", "-Dserver.port=8080", "-jar", "/opt/ecommerce/app.jar"]
 2. budowa obrazu 🧱 `sudo docker build -t my_ecommerce ./` - jak uruchomimy jeszcze raz to cache działą
 3. `sudo docker images` -> my_ecommerce
 
-### Zadanie domowe:
+# Telegraf zadanie 📁
+## Oprogramowanie
+* InfluxDB 🧢
+* Telegraf ☎️
+* Grafana 📊
+
+1. Tworzymy maszynę metrics w amazon ws
+2. `sudo dnf install https://dl.influxdata.com/telegraf/releases/telegraf-1.29.1-1.x86_64.rpm`
+3. `telegraf --sample-config > mytelegraf.conf` 
+4. Usuwamy komentarze # `grep -v "#" mytelegraf.conf | uniq > clear_telegraf.conf`
+5. `elegraf --config clear_telegraf.conf --test` (bez outputów)
+
+```
+[global_tags]
+
+[agent]
+  interval = "10s"
+  round_interval = true
+
+  metric_batch_size = 1000
+
+  metric_buffer_limit = 10000
+
+  collection_jitter = "0s"
+
+  flush_interval = "10s"
+  flush_jitter = "0s"
+
+  precision = "0s"
+
+  hostname = ""
+  omit_hostname = false
+
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+  collect_cpu_time = false
+  report_active = false
+  core_tags = false
+
+[[inputs.disk]]
+  mount_points = ["/"]
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+
+[[inputs.mem]]
+
+[[inputs.ping ]]
+urls = ["8.8.8.8", "uek.krakow.pl"]
+
+[[inputs.system]]
+```
+
+7. `df -h` (h - humanize) ☠️
+8. `sudo dnf install https://dl.influxdata.com/influxdb/releases/influxdb2-2.7.5-1.x86_64.rpm`
+9. `sudo yum install -y https://dl.grafana.com/enterprise/release/grafana-enterprise-10.2.3-1.x86_64.rpm`
+10. Grafa operuje na porcie `3000` ale uek blokuje więc zmieniamy 🎓
+11. `sudo nano /etc/grafana/grafana.ini` zmieniamy na `8080` 📈
+12. `sudo systemctl restart grafana-server.service` 🚀
