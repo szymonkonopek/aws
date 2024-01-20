@@ -4,7 +4,7 @@
 1. ssh s221598@csa.edu.jkan.pl (swój nr albumu)
 
 2. ``curl http://adsk.dydaktyka.jkan.pl/_static/id_student -o id_student`` (pobieramy plik id_student)
-3. ``ssh ec2-user@3.68.185.254 -i id_student`` (łaczymy się do ec2-user)
+3. ``ssh ec2-user@3.79.101.88 -i id_student`` (łaczymy się do ec2-user)
 * numerki to adres ip z aws
 3.71.202.94
 4. mam repo ``git@github.com:szymonkonopek/aws.git`` lub ``https://github.com/szymonkonopek/myEcom``
@@ -266,7 +266,7 @@ CMD ["/usr/bin/java/", "-Dserver.port=8080", "-jar", "/opt/ecommerce/app.jar"]
 2. `sudo dnf install https://dl.influxdata.com/telegraf/releases/telegraf-1.29.1-1.x86_64.rpm`
 3. `telegraf --sample-config > mytelegraf.conf` 
 4. Usuwamy komentarze # `grep -v "#" mytelegraf.conf | uniq > clear_telegraf.conf`
-5. `elegraf --config clear_telegraf.conf --test` (bez outputów)
+5. `telegraf --config clear_telegraf.conf --test` (bez outputów)
 
 ```
 [global_tags]
@@ -289,6 +289,10 @@ CMD ["/usr/bin/java/", "-Dserver.port=8080", "-jar", "/opt/ecommerce/app.jar"]
   hostname = ""
   omit_hostname = false
 
+[[outputs.influxdb]]
+  urls = ["http://127.0.0.1:8086]
+  database = "metrics"
+
 [[inputs.cpu]]
   percpu = true
   totalcpu = true
@@ -302,9 +306,6 @@ CMD ["/usr/bin/java/", "-Dserver.port=8080", "-jar", "/opt/ecommerce/app.jar"]
 
 [[inputs.mem]]
 
-[[inputs.ping ]]
-urls = ["8.8.8.8", "uek.krakow.pl"]
-
 [[inputs.system]]
 ```
 
@@ -314,3 +315,59 @@ urls = ["8.8.8.8", "uek.krakow.pl"]
 10. Grafa operuje na porcie `3000` ale uek blokuje więc zmieniamy 🎓
 11. `sudo nano /etc/grafana/grafana.ini` zmieniamy na `8080` 📈
 12. `sudo systemctl restart grafana-server.service` 🚀
+
+# Docker 15.01.2023
+1. `sudo dnf install docker`
+2. `sudo systemctl start docker`
+
+3. `sudo docker run -d --name=grafana -p 80:3000 grafana/grafana`
+4. `sudo docker run -d --name=influxdb -p 8086:8086 influxdb:1.8-alpine`
+
+5. wchodzimy na adres maszyny -> odpala się grafana i zmieniamy hasło
+6. new data source
+![Alt text](image-2.png)
+
+### Nowy dashboard (potrzebny telegraf)
+`sudo dnf install https://dl.influxdata.com/telegraf/releases/telegraf-1.29.2-1.x86_64.rpm`
+`sudo nano telegraf.conf`
+```
+[global_tags]
+
+[agent]
+  interval = "10s"
+  round_interval = true
+
+  metric_batch_size = 1000
+
+  metric_buffer_limit = 10000
+
+  collection_jitter = "0s"
+
+  flush_interval = "10s"
+  flush_jitter = "0s"
+
+  precision = "0s"
+
+  hostname = ""
+  omit_hostname = false
+
+[[outputs.influxdb]]
+        urls = ["http://127.0.0.1:8086"]
+        database = "metrics"
+
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+  collect_cpu_time = false
+  report_active = false
+  core_tags = false
+
+[[inputs.disk]]
+  mount_points = ["/"]
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+
+[[inputs.mem]]
+
+[[inputs.system]]
+```
+`telegraf config`
